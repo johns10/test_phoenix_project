@@ -66,7 +66,9 @@ defmodule TestPhoenixProject.MixProject do
       {:gettext, "~> 0.26"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+      {:exunit_json_formatter,
+       git: "https://github.com/johns10/exunit_json_formatter", branch: "master"}
     ]
   end
 
