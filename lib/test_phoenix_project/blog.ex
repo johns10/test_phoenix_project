@@ -4,7 +4,6 @@ defmodule TestPhoenixProject.Blog do
   """
 
   import Ecto.Query, warn: false
-  alias TestPhoenixProject.Repo
 
   alias TestPhoenixProject.Blog.Post
   alias TestPhoenixProject.Accounts.Scope
@@ -34,7 +33,7 @@ defmodule TestPhoenixProject.Blog do
 
   defdelegate list_posts(scope), to: BlogRepository
   defdelegate get_post!(scope, id), to: BlogRepository
-  defdelegate change_post(scope, post, attrs), to: BlogRepository
+  defdelegate change_post(scope, post, attrs \\ %{}), to: BlogRepository
 
   def create_post(scope, attrs) do
     with {:ok, post = %Post{}} <- BlogRepository.create_post(scope, attrs) do
@@ -46,7 +45,7 @@ defmodule TestPhoenixProject.Blog do
   def update_post(%Scope{} = scope, %Post{} = post, attrs) do
     true = post.user_id == scope.user.id
 
-    with {:ok, post = %Post{}} <- BlogRepository.update_post() do
+    with {:ok, post = %Post{}} <- BlogRepository.update_post(scope, post, attrs) do
       broadcast_post(scope, {:updated, post})
       {:ok, post}
     end
