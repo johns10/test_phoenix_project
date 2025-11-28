@@ -1,4 +1,4 @@
-defmodule TestPhoenixProject.Blog.BlogRepository do
+defmodule TestPhoenixProject.Blog.PostRepository do
   import Ecto.Query, warn: false
   alias TestPhoenixProject.Repo
 
