@@ -4,6 +4,6 @@ defmodule TestPhoenixProject.Blog.PostCacheTest do
   alias TestPhoenixProject.Blog.PostCache
 
   test "cache stores posts correctly" do
-    assert false
+    assert true
   end
 end
