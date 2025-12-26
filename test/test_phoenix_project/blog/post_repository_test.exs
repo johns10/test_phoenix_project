@@ -1,95 +1,159 @@
 defmodule TestPhoenixProject.Blog.PostRepositoryTest do
   use TestPhoenixProject.DataCase
 
+  alias TestPhoenixProject.Blog.Post
   alias TestPhoenixProject.Blog.PostRepository
 
-  describe "posts" do
-    alias TestPhoenixProject.Blog.Post
+  import TestPhoenixProject.AccountsFixtures, only: [user_scope_fixture: 0]
+  import TestPhoenixProject.BlogFixtures
 
-    import TestPhoenixProject.AccountsFixtures, only: [user_scope_fixture: 0]
-    import TestPhoenixProject.BlogFixtures
+  @invalid_attrs %{title: nil, content: nil, published: nil}
 
-    @invalid_attrs %{title: nil, content: nil, published: nil}
+  describe "list_posts/1" do
+    test "returns all posts for scoped user" do
+      scope = user_scope_fixture()
+      post1 = post_fixture(scope)
+      post2 = post_fixture(scope)
+      assert PostRepository.list_posts(scope) == [post1, post2]
+    end
 
-    test "list_posts/1 returns all scoped posts" do
+    test "returns empty list when user has no posts" do
+      scope = user_scope_fixture()
+      assert PostRepository.list_posts(scope) == []
+    end
+
+    test "does not return posts from other users" do
       scope = user_scope_fixture()
       other_scope = user_scope_fixture()
       post = post_fixture(scope)
-      other_post = post_fixture(other_scope)
+      _other_post = post_fixture(other_scope)
       assert PostRepository.list_posts(scope) == [post]
-      assert PostRepository.list_posts(other_scope) == [other_post]
     end
+  end
 
-    test "get_post!/2 returns the post with given id" do
+  describe "get_post!/2" do
+    test "returns post when found and owned by scoped user" do
       scope = user_scope_fixture()
       post = post_fixture(scope)
-      other_scope = user_scope_fixture()
       assert PostRepository.get_post!(scope, post.id) == post
-      assert_raise Ecto.NoResultsError, fn -> PostRepository.get_post!(other_scope, post.id) end
     end
 
-    test "create_post/2 with valid data creates a post" do
-      valid_attrs = %{title: "some title", content: "some content", published: true}
+    test "raises Ecto.NoResultsError when post not found" do
       scope = user_scope_fixture()
+
+      assert_raise Ecto.NoResultsError, fn ->
+        PostRepository.get_post!(scope, -1)
+      end
+    end
+
+    test "raises Ecto.NoResultsError when post owned by different user" do
+      scope = user_scope_fixture()
+      other_scope = user_scope_fixture()
+      post = post_fixture(other_scope)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        PostRepository.get_post!(scope, post.id)
+      end
+    end
+  end
+
+  describe "create_post/2" do
+    test "creates post with valid attributes" do
+      scope = user_scope_fixture()
+      valid_attrs = %{title: "some title", content: "some content", published: true}
 
       assert {:ok, %Post{} = post} = PostRepository.create_post(scope, valid_attrs)
       assert post.title == "some title"
       assert post.content == "some content"
       assert post.published == true
+    end
+
+    test "sets user_id from scope" do
+      scope = user_scope_fixture()
+      valid_attrs = %{title: "some title", content: "some content", published: true}
+
+      assert {:ok, %Post{} = post} = PostRepository.create_post(scope, valid_attrs)
       assert post.user_id == scope.user.id
     end
 
-    test "create_post/2 with invalid data returns error changeset" do
+    test "returns error changeset for invalid attributes" do
       scope = user_scope_fixture()
       assert {:error, %Ecto.Changeset{}} = PostRepository.create_post(scope, @invalid_attrs)
     end
 
-    test "update_post/3 with valid data updates the post" do
+    test "validates required fields" do
+      scope = user_scope_fixture()
+      assert {:error, %Ecto.Changeset{} = changeset} = PostRepository.create_post(scope, %{})
+      assert %{title: ["can't be blank"], content: ["can't be blank"]} = errors_on(changeset)
+    end
+  end
+
+  describe "update_post/3" do
+    test "updates post with valid attributes" do
       scope = user_scope_fixture()
       post = post_fixture(scope)
-      update_attrs = %{title: "some updated title", content: "some updated content", published: false}
+      update_attrs = %{title: "updated title", content: "updated content", published: false}
 
-      assert {:ok, %Post{} = post} = PostRepository.update_post(scope, post, update_attrs)
-      assert post.title == "some updated title"
-      assert post.content == "some updated content"
-      assert post.published == false
+      assert {:ok, %Post{} = updated_post} = PostRepository.update_post(scope, post, update_attrs)
+      assert updated_post.title == "updated title"
+      assert updated_post.content == "updated content"
+      assert updated_post.published == false
     end
 
-    test "update_post/3 with invalid scope raises" do
-      scope = user_scope_fixture()
-      other_scope = user_scope_fixture()
-      post = post_fixture(scope)
-
-      assert_raise MatchError, fn ->
-        PostRepository.update_post(other_scope, post, %{})
-      end
-    end
-
-    test "update_post/3 with invalid data returns error changeset" do
+    test "returns error changeset for invalid attributes" do
       scope = user_scope_fixture()
       post = post_fixture(scope)
+
       assert {:error, %Ecto.Changeset{}} = PostRepository.update_post(scope, post, @invalid_attrs)
       assert post == PostRepository.get_post!(scope, post.id)
     end
 
-    test "delete_post/2 deletes the post" do
-      scope = user_scope_fixture()
-      post = post_fixture(scope)
-      assert {:ok, %Post{}} = PostRepository.delete_post(scope, post)
-      assert_raise Ecto.NoResultsError, fn -> PostRepository.get_post!(scope, post.id) end
-    end
-
-    test "delete_post/2 with invalid scope raises" do
+    test "raises MatchError when user does not own post" do
       scope = user_scope_fixture()
       other_scope = user_scope_fixture()
+      post = post_fixture(other_scope)
+
+      assert_raise MatchError, fn ->
+        PostRepository.update_post(scope, post, %{title: "new title"})
+      end
+    end
+  end
+
+  describe "delete_post/2" do
+    test "deletes post when user owns it" do
+      scope = user_scope_fixture()
       post = post_fixture(scope)
-      assert_raise MatchError, fn -> PostRepository.delete_post(other_scope, post) end
+
+      assert {:ok, %Post{}} = PostRepository.delete_post(scope, post)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        PostRepository.get_post!(scope, post.id)
+      end
     end
 
-    test "change_post/2 returns a post changeset" do
+    test "raises MatchError when user does not own post" do
+      scope = user_scope_fixture()
+      other_scope = user_scope_fixture()
+      post = post_fixture(other_scope)
+
+      assert_raise MatchError, fn ->
+        PostRepository.delete_post(scope, post)
+      end
+    end
+  end
+
+  describe "change_post/3" do
+    test "returns changeset for post" do
       scope = user_scope_fixture()
       post = post_fixture(scope)
       assert %Ecto.Changeset{} = PostRepository.change_post(scope, post)
+    end
+
+    test "includes validation errors in changeset" do
+      scope = user_scope_fixture()
+      post = post_fixture(scope)
+      changeset = PostRepository.change_post(scope, post, @invalid_attrs)
+      assert %{title: ["can't be blank"], content: ["can't be blank"]} = errors_on(changeset)
     end
   end
 end
