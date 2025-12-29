@@ -68,7 +68,8 @@ defmodule TestPhoenixProject.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:exunit_json_formatter,
-       git: "https://github.com/johns10/exunit_json_formatter", branch: "master"}
+       git: "https://github.com/johns10/exunit_json_formatter", branch: "master"},
+      {:mix_machine, git: "https://github.com/johns10/mix_machine", branch: "master"}
     ]
   end
 
