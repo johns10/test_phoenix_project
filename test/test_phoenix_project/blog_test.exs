@@ -31,7 +31,7 @@ defmodule TestPhoenixProject.BlogTest do
 
     test "raises when post does not exist" do
       scope = user_scope_fixture()
-      assert_raise Ecto.NoResultsError, fn -> Blog.get_post!(scope, "nonexistent") end
+      assert_raise Ecto.NoResultsError, fn -> Blog.get_post!(scope, 999999) end
     end
   end
 
