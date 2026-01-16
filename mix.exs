@@ -69,7 +69,10 @@ defmodule TestPhoenixProject.MixProject do
       {:bandit, "~> 1.5"},
       {:exunit_json_formatter,
        git: "https://github.com/johns10/exunit_json_formatter", branch: "master"},
-      {:mix_machine, git: "https://github.com/johns10/mix_machine", branch: "master"}
+      {:mix_machine, git: "https://github.com/johns10/mix_machine", branch: "master"},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7.13"},
+      {:sobelow, "~> 0.14"},
     ]
   end
 
