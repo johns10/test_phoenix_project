@@ -71,8 +71,8 @@ defmodule TestPhoenixProject.MixProject do
        git: "https://github.com/Code-My-Spec/client_utils.git", branch: "main"},
       {:mix_machine, git: "https://github.com/johns10/mix_machine", branch: "master"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:credo, "~> 1.7.13"},
-      {:sobelow, "~> 0.14"}
+      {:credo, "~> 1.7.13", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.14", only: [:dev, :test], runtime: false},
     ]
   end
 
