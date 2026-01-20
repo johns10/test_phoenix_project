@@ -67,7 +67,7 @@ defmodule TestPhoenixProject.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      {:client_utils, "~> 0.1.2"},
+      {:client_utils, "~> 0.1.3"},
       {:mix_machine, git: "https://github.com/johns10/mix_machine", branch: "master"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7.13", only: [:dev, :test], runtime: false},
