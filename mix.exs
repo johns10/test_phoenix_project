@@ -72,7 +72,7 @@ defmodule TestPhoenixProject.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7.13", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.14", only: [:dev, :test], runtime: false},
-      {:sexy_spex, path: "../spex", only: :test}
+      {:sexy_spex, path: "../spex", only: [:test, :dev]}
     ]
   end
 
