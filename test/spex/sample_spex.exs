@@ -1,5 +1,5 @@
 defmodule TestPhoenixProject.SampleSpex do
-  use Spex
+  use SexySpex
 
   spex "Blog post management" do
     scenario "creating a post" do
